@@ -8,5 +8,7 @@
             "email": "nipil@users.noreply.github.com"
         }
     ],
-    "require": {}
+    "require": {
+        "slim/slim": "^3.4"
+    }
 }

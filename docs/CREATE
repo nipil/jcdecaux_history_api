@@ -10,18 +10,18 @@ php -r "unlink('composer-setup.php');"
 ===============================================================================
 $ php composer.phar init
 
-                                            
-  Welcome to the Composer config generator  
-                                            
+
+  Welcome to the Composer config generator
+
 
 
 This command will guide you through creating your composer.json config.
 
 Package name (<vendor>/<name>) [nipil/jcdecaux_history_api]: nipil/jcdecaux_history_api
 Description []: Web API to access jcdecaux_fetch_store and jcdecaux_stats_batch data
-Author [nipil <nipil@users.noreply.github.com>, n to skip]: 
-Minimum Stability []: 
-Package Type []: 
+Author [nipil <nipil@users.noreply.github.com>, n to skip]:
+Minimum Stability []:
+Package Type []:
 License []: MIT
 
 Define your dependencies.
@@ -43,4 +43,30 @@ Would you like to define your dev dependencies (require-dev) interactively [yes]
 }
 
 Do you confirm generation [yes]? yes
+===============================================================================
+$ php composer.phar require
+Search for a package: slim/slim
+Enter the version constraint to require (or leave blank to use the latest version):
+Using version ^3.4 for slim/slim
+Search for a package:
+./composer.json has been updated
+Loading composer repositories with package information
+Updating dependencies (including require-dev)
+  - Installing container-interop/container-interop (1.1.0)
+    Downloading: 100%
+
+  - Installing nikic/fast-route (v1.0.0)
+    Downloading: 100%
+
+  - Installing psr/http-message (1.0)
+    Downloading: 100%
+
+  - Installing pimple/pimple (v3.0.2)
+    Downloading: 100%
+
+  - Installing slim/slim (3.4.2)
+    Downloading: 100%
+
+Writing lock file
+Generating autoload files
 ===============================================================================
