@@ -12,10 +12,11 @@ class Dao
     public function __construct($logger)
     {
         $this->logger = $logger;
+        $this->logger->debug(__METHOD__, func_get_args());
     }
 
     public function noop()
     {
-        $this->logger->debug("noop");
+        $this->logger->debug(__METHOD__, func_get_args());
     }
 }

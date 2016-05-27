@@ -4,20 +4,17 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$settings = [
-    'settings' => [
-        'displayErrorDetails' => true,
-    ],
-];
+$config['displayErrorDetails'] = true;
+$config['log_path'] = __DIR__ . "/../logs/jha.log";
 
-$app = new \Slim\App($settings);
+$app = new \Slim\App(['settings' => $config]);
 
 $container = $app->getContainer();
 
 // MONOLOG
 
 $container['logstream'] = function ($c) {
-    return new \Monolog\Handler\StreamHandler(__DIR__ . "/../logs/jha.log");
+    return new \Monolog\Handler\StreamHandler($c['settings']['log_path']);
 };
 
 $container['slim_logger'] = function ($c) {
@@ -32,7 +29,7 @@ $container['dao_logger'] = function ($c) {
     return $logger;
 };
 
-$container['jha_dao'] =function ($c) {
+$container['jha_dao'] = function ($c) {
     return new \Jha\Dao($c['dao_logger']);
 };
 
