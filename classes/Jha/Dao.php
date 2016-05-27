@@ -7,8 +7,15 @@ namespace Jha;
 */
 class Dao
 {
-    public function __construct()
+    protected $logger;
+
+    public function __construct($logger)
     {
-        # code...
+        $this->logger = $logger;
+    }
+
+    public function noop()
+    {
+        $this->logger->debug("noop");
     }
 }
