@@ -70,3 +70,15 @@ Updating dependencies (including require-dev)
 Writing lock file
 Generating autoload files
 ===============================================================================
+Configure NGINX:
+
+	# jcdecaux_history_api
+	rewrite ^/jcdecaux_history_api "/jcdecaux_history_api/public/index.php" last;
+	location /jcdecaux_history_api/ {
+		root /path/to/outside/of/cloned/project;
+		location ~ \.php$ {
+			include snippets/fastcgi-php.conf;
+			fastcgi_pass unix:/var/run/php5-fpm.sock;
+		}
+	}
+===============================================================================
