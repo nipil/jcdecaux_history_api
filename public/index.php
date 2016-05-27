@@ -6,6 +6,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $config['displayErrorDetails'] = true;
 $config['log_path'] = __DIR__ . "/../logs/jha.log";
+$config['jcd_data'] = '/var/jcd_v2';
 
 $app = new \Slim\App(['settings' => $config]);
 
@@ -30,7 +31,7 @@ $container['dao_logger'] = function ($c) {
 };
 
 $container['jha_dao'] = function ($c) {
-    return new \Jha\Dao($c['dao_logger']);
+    return new \Jha\Dao($c['dao_logger'], $c['settings']['jcd_data']);
 };
 
 // ROUTES
@@ -41,6 +42,11 @@ $app->group('/jcdecaux_history_api', function () use ($app) {
         $this->slim_logger->debug($request->getMethod(), array('route' => $request->getUri()->__toString()));
         $this->jha_dao->noop();
         return "jcdecaux_history_api is working";
+    });
+
+    $app->get('/dates', function ($request, $response, $args) {
+        $this->slim_logger->debug($request->getMethod(), array('route' => $request->getUri()->__toString()));
+        return $this->jha_dao->getDates();
     });
 
 });
