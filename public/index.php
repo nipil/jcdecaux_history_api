@@ -30,6 +30,12 @@ $container['dao_logger'] = function ($c) {
     return $logger;
 };
 
+$container['controller_logger'] = function ($c) {
+    $logger = new \Monolog\Logger('controller');
+    $logger->pushHandler($c['logstream']);
+    return $logger;
+};
+
 $container['jha_dao'] = function ($c) {
     return new \Jha\Dao($c['dao_logger'], $c['settings']['jcd_data']);
 };
@@ -48,6 +54,8 @@ $app->group('/jcdecaux_history_api', function () use ($app) {
         $this->slim_logger->debug($request->getMethod(), array('route' => $request->getUri()->__toString()));
         return print_r($this->jha_dao->getDates(), true);
     });
+
+    $app->get('/noop', '\Jha\Controller:noop');
 
 });
 
