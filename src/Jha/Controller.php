@@ -8,6 +8,7 @@ namespace Jha;
 class Controller
 {
     protected $logger;
+    protected $dao;
 
     public function __construct($container)
     {
