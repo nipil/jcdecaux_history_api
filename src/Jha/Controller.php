@@ -11,7 +11,8 @@ class Controller
 
     public function __construct($container)
     {
-        $this->logger = $container->controller_logger;
+        $this->logger = new \Monolog\Logger(__CLASS__);
+        $this->logger->pushHandler($container['logstream']);
         $this->logger->debug(__METHOD__, func_get_args());
     }
 
