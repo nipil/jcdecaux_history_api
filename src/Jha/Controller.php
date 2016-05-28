@@ -9,7 +9,6 @@ class Controller
 {
     protected $logger;
     protected $dao;
-    protected $http_cache;
 
     public function __construct($container)
     {
@@ -17,20 +16,12 @@ class Controller
         $this->logger->pushHandler($container['log_stream']);
 
         $this->dao = $container['jha_dao'];
-        //print_r($container);
-        $this->http_cache = $container['http_cache'];
     }
 
     public function getDates($request, $response, $args)
     {
         $dates = $this->dao->getDates();
         $response = $response->withJson($dates);
-        $response = $this->doCache($response);
         return $response;
-    }
-
-    public function doCache($response, $duration = 3600)
-    {
-        return $this->http_cache->withExpires($response, time() + $duration);
     }
 }

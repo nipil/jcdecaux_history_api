@@ -4,12 +4,12 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-// jcd data uses UTC
-date_default_timezone_set('UTC');
+date_default_timezone_set('UTC'); // jcd data uses UTC
 
 $config['displayErrorDetails'] = true;
 $config['log_path'] = __DIR__ . "/../logs/jha.log";
 $config['jcd_data_abs_path'] = '/var/jcd_v2';
+$config['caching_duration'] = 3600;
 
 $app = new \Slim\App(['settings' => $config]);
 
@@ -35,20 +35,30 @@ $container['perf_logger'] = function ($c) {
 
 // HTTP CACHE MIDDLEWARE
 
-$container['http_cache'] = function () {
+$container['http_cache'] = function ($c) {
     return new \Slim\HttpCache\CacheProvider();
 };
 
-// MIDDLEWARE ORDERING
-
-$app->add(new \Slim\HttpCache\Cache('public', 86400));
+$container['jha_expires'] = function ($c) {
+    return new \Jha\HttpExpire($c);
+};
 
 // ROUTES
 
-$app->group('/jcdecaux_history_api', function () use ($app) {
+$group = $app->group('/jcdecaux_history_api', function () use ($app) {
 
     $app->get('/dates', '\Jha\Controller:getDates');
 
-})->add($container['perf_logger']);
+});
+
+// MIDDLEWARE
+
+$app->add(new \Slim\HttpCache\Cache('public', 86400));
+
+$group->add($container['jha_expires']);
+
+$group->add($container['perf_logger']);
+
+// RUN
 
 $app->run();
