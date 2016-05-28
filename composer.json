@@ -14,7 +14,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Jha\\": "classes/Jha"
+            "Jha\\": "src/Jha"
         }
     }
 }
