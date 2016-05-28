@@ -64,7 +64,15 @@ class Dao
 
     public function getContracts()
     {
-        $stmt = $this->pdo->query("SELECT * FROM contracts");
+        $stmt = $this->pdo->query(
+            "SELECT
+                contract_id,
+                contract_name,
+                commercial_name,
+                country_code,
+                cities
+            FROM contracts"
+        );
         return $stmt->fetchAll();
     }
 }
