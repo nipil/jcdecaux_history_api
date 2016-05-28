@@ -24,14 +24,8 @@ $container['slim_logger'] = function ($c) {
     return $logger;
 };
 
-$container['dao_logger'] = function ($c) {
-    $logger = new \Monolog\Logger('dao');
-    $logger->pushHandler($c['logstream']);
-    return $logger;
-};
-
 $container['jha_dao'] = function ($c) {
-    return new \Jha\Dao($c['dao_logger'], $c['settings']['jcd_data']);
+    return new \Jha\Dao($c);
 };
 
 // ROUTES

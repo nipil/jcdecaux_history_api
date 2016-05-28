@@ -10,11 +10,13 @@ class Dao
     protected $logger;
     protected $data_path;
 
-    public function __construct($logger, $data_path)
+    public function __construct($container)
     {
-        $this->logger = $logger;
+        $this->logger = new \Monolog\Logger(__CLASS__);
+        $this->logger->pushHandler($container['logstream']);
         $this->logger->debug(__METHOD__, func_get_args());
-        $this->data_path = $data_path;
+
+        $this->data_path = $container['settings']['jcd_data'];
         $this->checkDataDirectory();
     }
 
