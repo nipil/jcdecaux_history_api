@@ -18,15 +18,17 @@ $container['log_stream'] = function ($c) {
     return new \Monolog\Handler\StreamHandler($c['settings']['log_path']);
 };
 
+// JHA
+
 $container['jha_dao'] = function ($c) {
     return new \Jha\Dao($c);
 };
 
+// MIDDLEWARES
+
 // ROUTES
 
 $app->group('/jcdecaux_history_api', function () use ($app) {
-
-    $app->get('', '\Jha\Controller:root');
 
     $app->get('/dates', '\Jha\Controller:getDates');
 
