@@ -34,10 +34,7 @@ $app->group('/jcdecaux_history_api', function () use ($app) {
 
     $app->get('', '\Jha\Controller:root');
 
-    $app->get('/dates', function ($request, $response, $args) {
-        $this->slim_logger->debug($request->getMethod(), array('route' => $request->getUri()->__toString()));
-        return print_r($this->jha_dao->getDates(), true);
-    });
+    $app->get('/dates', '\Jha\Controller:getDates');
 
 });
 

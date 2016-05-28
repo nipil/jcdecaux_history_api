@@ -14,11 +14,18 @@ class Controller
         $this->logger = new \Monolog\Logger(__CLASS__);
         $this->logger->pushHandler($container['logstream']);
         $this->logger->debug(__METHOD__, func_get_args());
+
+        $this->dao = $container['jha_dao'];
     }
 
     public function root()
     {
         $this->logger->debug(__METHOD__, func_get_args());
         return "api root";
+    }
+
+    public function getDates()
+    {
+        return print_r($this->dao->getDates(), true);
     }
 }
