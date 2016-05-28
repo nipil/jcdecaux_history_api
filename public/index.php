@@ -4,6 +4,9 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
+// jcd data uses UTC
+date_default_timezone_set('UTC');
+
 $config['displayErrorDetails'] = true;
 $config['log_path'] = __DIR__ . "/../logs/jha.log";
 $config['jcd_data_abs_path'] = '/var/jcd_v2';
