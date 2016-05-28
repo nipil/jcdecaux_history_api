@@ -16,12 +16,6 @@ class Controller
         $this->logger->debug(__METHOD__, func_get_args());
     }
 
-    public function noop()
-    {
-        $this->logger->debug(__METHOD__, func_get_args());
-        return "controller works";
-    }
-
     public function root()
     {
         $this->logger->debug(__METHOD__, func_get_args());

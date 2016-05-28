@@ -39,8 +39,6 @@ $app->group('/jcdecaux_history_api', function () use ($app) {
         return print_r($this->jha_dao->getDates(), true);
     });
 
-    $app->get('/noop', '\Jha\Controller:noop');
-
 });
 
 $app->run();
