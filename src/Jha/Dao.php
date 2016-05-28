@@ -23,8 +23,27 @@ class Dao
 
     public function getDates()
     {
-        $files = scandir($this->data_path);
-
-        return print_r($files, true);
+        $dates = [];
+        $handle = opendir($this->data_path);
+        if ($handle == false) {
+            throw new \Exception("Cannot read data directory");
+        }
+        while (false !== ($entry = readdir($handle))) {
+            $matches = null;
+            $res = preg_match(
+                "/^samples_(\d{4})_(\d{2})_(\d{2}).db$/",
+                $entry,
+                $matches
+            );
+            if ($res === false) {
+                throw new \Exception("Cannot match dates from files");
+            }
+            if ($res > 0) {
+                array_shift($matches);
+                $dates[] = join('-', $matches);
+            }
+        }
+        closedir($handle);
+        return $dates;
     }
 }
