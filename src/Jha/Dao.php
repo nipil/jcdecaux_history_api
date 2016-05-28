@@ -18,11 +18,6 @@ class Dao
         $this->checkDataDirectory();
     }
 
-    public function noop()
-    {
-        $this->logger->debug(__METHOD__, func_get_args());
-    }
-
     public function checkDataDirectory()
     {
         $this->logger->debug(__METHOD__, func_get_args());
