@@ -49,6 +49,10 @@ $group = $app->group('/jcdecaux_history_api', function () use ($app) {
 
     $app->get('/dates', '\Jha\Controller:getDates');
 
+    $app->group('/contracts', function () use ($app) {
+        $app->get('', '\Jha\Controller:getContracts');
+    });
+
 });
 
 // MIDDLEWARE

@@ -24,4 +24,11 @@ class Controller
         $response = $response->withJson($dates);
         return $response;
     }
+
+    public function getContracts($request, $response, $args)
+    {
+        $contracts = $this->dao->getContracts();
+        $response = $response->withJson($contracts);
+        return $response;
+    }
 }

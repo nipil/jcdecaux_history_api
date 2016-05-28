@@ -51,4 +51,10 @@ class Dao
         closedir($handle);
         return $dates;
     }
+
+    public function getContracts()
+    {
+        $contracts = [];
+        return $contracts;
+    }
 }
