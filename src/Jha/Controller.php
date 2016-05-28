@@ -31,4 +31,14 @@ class Controller
         $response = $response->withJson($contracts);
         return $response;
     }
+
+    public function getContract($request, $response, $args)
+    {
+        $contract = $this->dao->getContract($args['id']);
+        if ($contract === null) {
+            return $response->withStatus(404);
+        }
+        $response = $response->withJson($contract);
+        return $response;
+    }
 }

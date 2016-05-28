@@ -75,4 +75,24 @@ class Dao
         );
         return $stmt->fetchAll();
     }
+
+    public function getContract($id)
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT
+                contract_id,
+                contract_name,
+                commercial_name,
+                country_code,
+                cities
+            FROM contracts
+            WHERE contract_id = :id"
+        );
+        $stmt->execute(array(":id" => $id));
+        $contract = $stmt->fetch();
+        if ($contract === false) {
+            return null;
+        }
+        return $contract;
+    }
 }
