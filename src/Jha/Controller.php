@@ -18,8 +18,9 @@ class Controller
         $this->dao = $container['jha_dao'];
     }
 
-    public function getDates()
+    public function getDates($request, $response, $args)
     {
-        return print_r($this->dao->getDates(), true);
+        $dates = $this->dao->getDates();
+        return $response->withJson($dates);
     }
 }
