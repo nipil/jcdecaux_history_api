@@ -15,7 +15,6 @@ class Controller
     {
         $this->logger = new \Monolog\Logger(__CLASS__);
         $this->logger->pushHandler($container['log_stream']);
-        $this->logger->debug(__METHOD__, func_get_args());
 
         $this->dao = $container['jha_dao'];
         //print_r($container);
@@ -26,7 +25,8 @@ class Controller
     {
         $dates = $this->dao->getDates();
         $response = $response->withJson($dates);
-        return $this->doCache($response);
+        $response = $this->doCache($response);
+        return $response;
     }
 
     public function doCache($response, $duration = 3600)

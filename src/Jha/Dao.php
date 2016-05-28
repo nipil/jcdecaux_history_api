@@ -14,7 +14,6 @@ class Dao
     {
         $this->logger = new \Monolog\Logger(__CLASS__);
         $this->logger->pushHandler($container['log_stream']);
-        $this->logger->debug(__METHOD__, func_get_args());
 
         $this->data_path = $container['settings']['jcd_data_abs_path'];
         $this->checkDataDirectory();
@@ -22,7 +21,6 @@ class Dao
 
     public function checkDataDirectory()
     {
-        $this->logger->debug(__METHOD__, func_get_args());
         if (! is_dir($this->data_path)) {
             throw new \Exception($this->data_path . " is not a directory");
         }
