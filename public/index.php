@@ -6,7 +6,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $config['displayErrorDetails'] = true;
 $config['log_path'] = __DIR__ . "/../logs/jha.log";
-$config['jcd_data'] = '/var/jcd_v2';
+$config['jcd_data_abs_path'] = '/var/jcd_v2';
 
 $app = new \Slim\App(['settings' => $config]);
 

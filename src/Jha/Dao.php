@@ -16,7 +16,7 @@ class Dao
         $this->logger->pushHandler($container['log_stream']);
         $this->logger->debug(__METHOD__, func_get_args());
 
-        $this->data_path = $container['settings']['jcd_data'];
+        $this->data_path = $container['settings']['jcd_data_abs_path'];
         $this->checkDataDirectory();
     }
 
@@ -24,7 +24,7 @@ class Dao
     {
         $this->logger->debug(__METHOD__, func_get_args());
         if (! is_dir($this->data_path)) {
-            throw new \Exception("Data directory is not a directory");
+            throw new \Exception($this->data_path . " is not a directory");
         }
     }
 
@@ -33,7 +33,7 @@ class Dao
         $dates = [];
         $handle = opendir($this->data_path);
         if ($handle == false) {
-            throw new \Exception("Cannot read data directory");
+            throw new \Exception("Cannot read directory " . $this->data_path);
         }
         while (false !== ($entry = readdir($handle))) {
             $matches = null;
