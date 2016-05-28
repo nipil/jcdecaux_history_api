@@ -27,7 +27,13 @@ $container['jha_dao'] = function ($c) {
     return new \Jha\Dao($c);
 };
 
-// MIDDLEWARES
+// HTTP CACHE
+
+$container['http_cache'] = function () {
+    return new \Slim\HttpCache\CacheProvider();
+};
+
+$app->add(new \Slim\HttpCache\Cache('public', 86400));
 
 // ROUTES
 
