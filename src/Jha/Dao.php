@@ -9,6 +9,7 @@ class Dao
 {
     protected $logger;
     protected $data_path;
+    protected $pdo;
 
     public function __construct($container)
     {
@@ -17,6 +18,15 @@ class Dao
 
         $this->data_path = $container['settings']['jcd_data_abs_path'];
         $this->checkDataDirectory();
+
+        try {
+            $this->pdo = new \PDO('sqlite:' . $this->data_path . '/app.db');
+            $this->pdo->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
+            $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        } catch (\PDOException $e) {
+            $this->logger->error($e->getMessage());
+            throw $e;
+        }
     }
 
     public function checkDataDirectory()
@@ -54,7 +64,7 @@ class Dao
 
     public function getContracts()
     {
-        $contracts = [];
-        return $contracts;
+        $stmt = $this->pdo->query("SELECT * FROM contracts");
+        return $stmt->fetchAll();
     }
 }
