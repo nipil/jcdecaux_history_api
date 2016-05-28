@@ -3,7 +3,7 @@
 namespace Jha;
 
 /**
-* Data Access Object for jcd_fetch_store and jcd_stats_batch
+* Data Access Object for jcdecaux_fetch_store and jcdecaux_stats_batch
 */
 class Dao
 {
@@ -13,12 +13,22 @@ class Dao
     public function __construct($logger, $data_path)
     {
         $this->logger = $logger;
+        $this->logger->debug(__METHOD__, func_get_args());
         $this->data_path = $data_path;
+        $this->checkDataDirectory();
     }
 
     public function noop()
     {
         $this->logger->debug(__METHOD__, func_get_args());
+    }
+
+    public function checkDataDirectory()
+    {
+        $this->logger->debug(__METHOD__, func_get_args());
+        if (! is_dir($this->data_path)) {
+            throw new \Exception("Data directory is not a directory");
+        }
     }
 
     public function getDates()
