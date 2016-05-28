@@ -14,14 +14,8 @@ $container = $app->getContainer();
 
 // MONOLOG
 
-$container['logstream'] = function ($c) {
+$container['log_stream'] = function ($c) {
     return new \Monolog\Handler\StreamHandler($c['settings']['log_path']);
-};
-
-$container['slim_logger'] = function ($c) {
-    $logger = new \Monolog\Logger('slim');
-    $logger->pushHandler($c['logstream']);
-    return $logger;
 };
 
 $container['jha_dao'] = function ($c) {

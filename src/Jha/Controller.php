@@ -12,7 +12,7 @@ class Controller
     public function __construct($container)
     {
         $this->logger = new \Monolog\Logger(__CLASS__);
-        $this->logger->pushHandler($container['logstream']);
+        $this->logger->pushHandler($container['log_stream']);
         $this->logger->debug(__METHOD__, func_get_args());
 
         $this->dao = $container['jha_dao'];
