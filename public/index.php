@@ -32,11 +32,7 @@ $container['jha_dao'] = function ($c) {
 
 $app->group('/jcdecaux_history_api', function () use ($app) {
 
-    $app->get('', function ($request, $response, $args) {
-        $this->slim_logger->debug($request->getMethod(), array('route' => $request->getUri()->__toString()));
-        $this->jha_dao->noop();
-        return "jcdecaux_history_api is working";
-    });
+    $app->get('', '\Jha\Controller:root');
 
     $app->get('/dates', function ($request, $response, $args) {
         $this->slim_logger->debug($request->getMethod(), array('route' => $request->getUri()->__toString()));

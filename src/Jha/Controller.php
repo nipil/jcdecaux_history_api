@@ -21,4 +21,10 @@ class Controller
         $this->logger->debug(__METHOD__, func_get_args());
         return "controller works";
     }
+
+    public function root()
+    {
+        $this->logger->debug(__METHOD__, func_get_args());
+        return "api root";
+    }
 }
