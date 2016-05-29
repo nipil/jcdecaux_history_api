@@ -8,7 +8,7 @@ namespace Jha;
 class Dao
 {
     protected $logger;
-    protected $data_path;
+    protected $dataPath;
     protected $pdo;
 
     public function __construct($container)
@@ -16,11 +16,11 @@ class Dao
         $this->logger = new \Monolog\Logger(__CLASS__);
         $this->logger->pushHandler($container['log_stream']);
 
-        $this->data_path = $container['settings']['jcd_data_abs_path'];
+        $this->dataPath = $container['settings']['jcd_data_abs_path'];
         $this->checkDataDirectory();
 
         try {
-            $this->pdo = new \PDO('sqlite:' . $this->data_path . '/app.db');
+            $this->pdo = new \PDO('sqlite:' . $this->dataPath . '/app.db');
             $this->pdo->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
             $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         } catch (\PDOException $e) {
@@ -31,17 +31,17 @@ class Dao
 
     public function checkDataDirectory()
     {
-        if (! is_dir($this->data_path)) {
-            throw new \Exception($this->data_path . " is not a directory");
+        if (! is_dir($this->dataPath)) {
+            throw new \Exception($this->dataPath . " is not a directory");
         }
     }
 
     public function getDates()
     {
         $dates = [];
-        $handle = opendir($this->data_path);
+        $handle = opendir($this->dataPath);
         if ($handle == false) {
-            throw new \Exception("Cannot read directory " . $this->data_path);
+            throw new \Exception("Cannot read directory " . $this->dataPath);
         }
         while (false !== ($entry = readdir($handle))) {
             $matches = null;
@@ -76,7 +76,7 @@ class Dao
         return $stmt->fetchAll();
     }
 
-    public function getContract($id)
+    public function getContract($contractId)
     {
         $stmt = $this->pdo->prepare(
             "SELECT
@@ -88,7 +88,7 @@ class Dao
             FROM contracts
             WHERE contract_id = :id"
         );
-        $stmt->execute(array(":id" => $id));
+        $stmt->execute(array(":id" => $contractId));
         $contract = $stmt->fetch();
         if ($contract === false) {
             return null;

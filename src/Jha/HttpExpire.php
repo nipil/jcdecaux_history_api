@@ -7,13 +7,13 @@ namespace Jha;
 */
 class HttpExpire
 {
-    protected $http_cache;
-    protected $cache_duration;
+    protected $httpCache;
+    protected $cacheDuration;
 
     public function __construct($container)
     {
-        $this->http_cache = $container['http_cache'];
-        $this->cache_duration = $container['settings']['caching_duration'];
+        $this->httpCache = $container['http_cache'];
+        $this->cacheDuration = $container['settings']['caching_duration'];
     }
 
     public function __invoke($request, $response, $next)
@@ -25,9 +25,9 @@ class HttpExpire
 
     public function setExpireHeaders($response)
     {
-        return $this->http_cache->withExpires(
+        return $this->httpCache->withExpires(
             $response,
-            time() + $this->cache_duration
+            time() + $this->cacheDuration
         );
     }
 }
