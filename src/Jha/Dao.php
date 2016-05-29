@@ -181,6 +181,9 @@ class Dao
 
     public function getSamples($date, $contractId, $stationId)
     {
+        if ($this->getStation($contractId, $stationId) === null) {
+            return null;
+        }
         $dataPdo = $this->getSamplesPdo($date);
         if ($dataPdo === null) {
             return null; // date not found
