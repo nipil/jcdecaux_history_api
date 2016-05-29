@@ -54,6 +54,12 @@ class Dao
         return $this->getPdo('app.db', true);
     }
 
+    public function getSamplesPdo($date)
+    {
+        $filename = 'samples_' . strtr($date, '-', '_') . '.db';
+        return $this->getPdo($filename, false);
+    }
+
     public function checkDataDirectory()
     {
         if (! is_dir($this->dataPath)) {
@@ -175,7 +181,30 @@ class Dao
 
     public function getSamples($date, $contractId, $stationId)
     {
-        // NYI
-        return [$date, $contractId, $stationId];
+        $dataPdo = $this->getSamplesPdo($date);
+        if ($dataPdo === null) {
+            return null; // date not found
+        }
+        $stmt = $dataPdo->prepare(
+            "SELECT
+                timestamp,
+                contract_id,
+                station_number,
+                available_bikes,
+                available_bike_stands
+            FROM archived_samples
+            WHERE contract_id = :cid
+            AND station_number = :sid
+            ORDER BY timestamp"
+        );
+        $stmt->execute(array(
+            ":cid" => $contractId,
+            ":sid" => $stationId
+            ));
+        $samples = $stmt->fetchAll();
+        if ($samples === false) {
+            return null;
+        }
+        return $samples;
     }
 }
