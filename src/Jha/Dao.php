@@ -95,4 +95,26 @@ class Dao
         }
         return $contract;
     }
+
+    public function getStations($contractId)
+    {
+        if ($this->getContract($contractId) === null) {
+            return null;
+        }
+        $stmt = $this->pdo->prepare(
+            "SELECT
+                station_number,
+                status,
+                bike_stands,
+                bonus,
+                banking,
+                position,
+                address,
+                station_name
+            FROM old_samples
+            WHERE contract_id = :cid"
+        );
+        $stmt->execute(array(":cid" => $contractId));
+        return $stmt->fetchAll();
+    }
 }

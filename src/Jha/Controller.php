@@ -41,4 +41,14 @@ class Controller
         $response = $response->withJson($contract);
         return $response;
     }
+
+    public function getStations($request, $response, $args)
+    {
+        $stations = $this->dao->getStations($args['cid']);
+        if ($stations === null) {
+            return $response->withStatus(404);
+        }
+        $response = $response->withJson($stations);
+        return $response;
+    }
 }
