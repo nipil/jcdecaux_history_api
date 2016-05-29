@@ -64,6 +64,14 @@ $group = $app->group('/jcdecaux_history_api', function () use ($app) {
         });
     });
 
+    $app->get(
+        '/samples'
+        . '/dates/{date:[0-9]{4}-[0-9]{2}-[0-9]{2}}'
+        . '/contracts/{cid:[0-9]+}'
+        . '/stations/{sid:[0-9]+}',
+        '\Jha\Controller:getSamples'
+    );
+
 });
 
 // MIDDLEWARE

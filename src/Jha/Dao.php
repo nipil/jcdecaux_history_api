@@ -147,4 +147,10 @@ class Dao
         }
         return $res;
     }
+
+    public function getSamples($date, $contractId, $stationId)
+    {
+        // NYI
+        return [$date, $contractId, $stationId];
+    }
 }

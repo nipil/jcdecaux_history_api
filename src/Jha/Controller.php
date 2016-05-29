@@ -61,4 +61,17 @@ class Controller
         $response = $response->withJson($stations);
         return $response;
     }
+
+    public function getSamples($request, $response, $args)
+    {
+        $samples = $this->dao->getSamples(
+            $args['date'],
+            $args['cid'],
+            $args['sid']
+        );
+        if ($samples === null) {
+            return $response->withStatus(404);
+        }
+        return $response->withJson($samples);
+    }
 }
