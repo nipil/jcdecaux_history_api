@@ -69,7 +69,13 @@ class Dao
     public function getSamplesPdo($date)
     {
         $filename = 'samples_' . strtr($date, '-', '_') . '.db';
-        return $this->getPdo($filename, false);
+        $pdo = $this->getPdo($filename, false);
+        if ($pdo === null) {
+            $this->lastError = self::ERR_DATE_NOT_FOUND;
+            return null;
+        }
+        $this->lastError = null;
+        return $pdo;
     }
 
     public function checkDataDirectory()
@@ -201,13 +207,13 @@ class Dao
 
     public function getSamples($date, $contractId, $stationId)
     {
-        if ($this->getStation($contractId, $stationId) === null) {
-            // lastError was set by getStation
-            return null;
-        }
         $dataPdo = $this->getSamplesPdo($date);
         if ($dataPdo === null) {
-            $this->lastError = self::ERR_DATE_NOT_FOUND;
+            // lastError was set by getSamplesPdo
+            return null;
+        }
+        if ($this->getStation($contractId, $stationId) === null) {
+            // lastError was set by getStation
             return null;
         }
         $stmt = $dataPdo->prepare(
