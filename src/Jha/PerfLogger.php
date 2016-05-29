@@ -24,6 +24,7 @@ class PerfLogger
 
     public function logEslapsed($request)
     {
+        // BUG: cannot use filter_input, does not recognize REQUEST_TIME_FLOAT
         $time = (microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']);
         $this->logger->debug($request->getUri(), array('time' => $time));
     }
