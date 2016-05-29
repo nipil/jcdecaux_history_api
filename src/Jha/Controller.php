@@ -36,7 +36,10 @@ class Controller
     {
         $contract = $this->dao->getContract($args['cid']);
         if ($contract === null) {
-            return $response->withStatus(404);
+            return $response->withJson(
+                array('error' => $this->dao->getLastError()),
+                404
+            );
         }
         $response = $response->withJson($contract);
         return $response;
@@ -46,7 +49,10 @@ class Controller
     {
         $stations = $this->dao->getStations($args['cid']);
         if ($stations === null) {
-            return $response->withStatus(404);
+            return $response->withJson(
+                array('error' => $this->dao->getLastError()),
+                404
+            );
         }
         $response = $response->withJson($stations);
         return $response;
@@ -56,7 +62,10 @@ class Controller
     {
         $stations = $this->dao->getStation($args['cid'], $args['sid']);
         if ($stations === null) {
-            return $response->withStatus(404);
+            return $response->withJson(
+                array('error' => $this->dao->getLastError()),
+                404
+            );
         }
         $response = $response->withJson($stations);
         return $response;
@@ -70,7 +79,10 @@ class Controller
             $args['sid']
         );
         if ($samples === null) {
-            return $response->withStatus(404);
+            return $response->withJson(
+                array('error' => $this->dao->getLastError()),
+                404
+            );
         }
         return $response->withJson($samples);
     }

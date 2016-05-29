@@ -10,6 +10,11 @@ class Dao
     protected $logger;
     protected $dataPath;
     protected $pdo;
+    protected $lastError;
+
+    const ERR_CONTRACT_NOT_FOUND = "contract not found";
+    const ERR_STATION_NOT_FOUND = "station not found";
+    const ERR_DATE_NOT_FOUND = "date not found";
 
     public function __construct($container)
     {
@@ -20,6 +25,13 @@ class Dao
         $this->checkDataDirectory();
 
         $this->pdo = $this->getAppPdo();
+
+        $this->lastError = null;
+    }
+
+    public function getLastError()
+    {
+        return $this->lastError;
     }
 
     private function getPdo($filename, $isErrorFatal)
@@ -122,14 +134,17 @@ class Dao
         $stmt->execute(array(":cid" => $contractId));
         $contract = $stmt->fetch();
         if ($contract === false) {
+            $this->lastError = self::ERR_CONTRACT_NOT_FOUND;
             return null;
         }
+        $this->lastError = null;
         return $contract;
     }
 
     public function getStations($contractId)
     {
         if ($this->getContract($contractId) === null) {
+            $this->lastError = self::ERR_CONTRACT_NOT_FOUND;
             return null;
         }
         $stmt = $this->pdo->prepare(
@@ -146,12 +161,15 @@ class Dao
             WHERE contract_id = :cid"
         );
         $stmt->execute(array(":cid" => $contractId));
-        return $stmt->fetchAll();
+        $stations = $stmt->fetchAll();
+        $this->lastError = null;
+        return $stations;
     }
 
     public function getStation($contractId, $stationId)
     {
         if ($this->getContract($contractId) === null) {
+            $this->lastError = self::ERR_CONTRACT_NOT_FOUND;
             return null;
         }
         $stmt = $this->pdo->prepare(
@@ -174,19 +192,23 @@ class Dao
             ));
         $res = $stmt->fetch();
         if ($res === false) {
+            $this->lastError = self::ERR_STATION_NOT_FOUND;
             return null;
         }
+        $this->lastError = null;
         return $res;
     }
 
     public function getSamples($date, $contractId, $stationId)
     {
         if ($this->getStation($contractId, $stationId) === null) {
+            // lastError was set by getStation
             return null;
         }
         $dataPdo = $this->getSamplesPdo($date);
         if ($dataPdo === null) {
-            return null; // date not found
+            $this->lastError = self::ERR_DATE_NOT_FOUND;
+            return null;
         }
         $stmt = $dataPdo->prepare(
             "SELECT
@@ -205,9 +227,7 @@ class Dao
             ":sid" => $stationId
             ));
         $samples = $stmt->fetchAll();
-        if ($samples === false) {
-            return null;
-        }
+        $this->lastError = null;
         return $samples;
     }
 }
