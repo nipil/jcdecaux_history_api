@@ -57,6 +57,8 @@ $group = $app->group('/jcdecaux_history_api', function () use ($app) {
 
             $app->group('/stations', function () use ($app) {
                 $app->get('', '\Jha\Controller:getStations');
+
+                $app->get('/{sid:[0-9]+}', '\Jha\Controller:getStation');
             });
         });
     });

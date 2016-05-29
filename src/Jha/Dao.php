@@ -117,4 +117,34 @@ class Dao
         $stmt->execute(array(":cid" => $contractId));
         return $stmt->fetchAll();
     }
+
+    public function getStation($contractId, $stationId)
+    {
+        if ($this->getContract($contractId) === null) {
+            return null;
+        }
+        $stmt = $this->pdo->prepare(
+            "SELECT
+                station_number,
+                status,
+                bike_stands,
+                bonus,
+                banking,
+                position,
+                address,
+                station_name
+            FROM old_samples
+            WHERE contract_id = :cid
+            AND station_number = :sid"
+        );
+        $stmt->execute(array(
+            ":cid" => $contractId,
+            ":sid" => $stationId
+            ));
+        $res = $stmt->fetch();
+        if ($res === false) {
+            return null;
+        }
+        return $res;
+    }
 }
