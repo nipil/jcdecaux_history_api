@@ -51,7 +51,10 @@ $group = $app->group('/jcdecaux_history_api', function () use ($app) {
 
     $app->group('/contracts', function () use ($app) {
         $app->get('', '\Jha\Controller:getContracts');
-        $app->get('/{id:[0-9]+}', '\Jha\Controller:getContract');
+
+        $app->group('/{cid:[0-9]+}', function () use ($app) {
+            $app->get('', '\Jha\Controller:getContract');
+        });
     });
 
 });

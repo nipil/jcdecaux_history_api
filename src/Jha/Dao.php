@@ -86,9 +86,9 @@ class Dao
                 country_code,
                 cities
             FROM contracts
-            WHERE contract_id = :id"
+            WHERE contract_id = :cid"
         );
-        $stmt->execute(array(":id" => $contractId));
+        $stmt->execute(array(":cid" => $contractId));
         $contract = $stmt->fetch();
         if ($contract === false) {
             return null;

@@ -34,7 +34,7 @@ class Controller
 
     public function getContract($request, $response, $args)
     {
-        $contract = $this->dao->getContract($args['id']);
+        $contract = $this->dao->getContract($args['cid']);
         if ($contract === null) {
             return $response->withStatus(404);
         }
