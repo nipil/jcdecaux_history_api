@@ -19,14 +19,39 @@ class Dao
         $this->dataPath = $container['settings']['jcd_data_abs_path'];
         $this->checkDataDirectory();
 
+        $this->pdo = $this->getAppPdo();
+    }
+
+    private function getPdo($filename, $isErrorFatal)
+    {
         try {
-            $this->pdo = new \PDO('sqlite:' . $this->dataPath . '/app.db');
-            $this->pdo->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
-            $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $pdo = new \PDO(
+                'sqlite:'
+                . $this->dataPath
+                . '/'
+                . $filename
+            );
+            $pdo->setAttribute(
+                \PDO::ATTR_DEFAULT_FETCH_MODE,
+                \PDO::FETCH_ASSOC
+            );
+            $pdo->setAttribute(
+                \PDO::ATTR_ERRMODE,
+                \PDO::ERRMODE_EXCEPTION
+            );
+            return $pdo;
         } catch (\PDOException $e) {
             $this->logger->error($e->getMessage());
-            throw $e;
+            if ($isErrorFatal) {
+                throw $e;
+            }
+            return null;
         }
+    }
+
+    public function getAppPdo()
+    {
+        return $this->getPdo('app.db', true);
     }
 
     public function checkDataDirectory()
