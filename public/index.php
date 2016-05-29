@@ -11,6 +11,11 @@ $config['log_path'] = __DIR__ . "/../logs/jha.log";
 $config['jcd_data_abs_path'] = '/var/jcd_v2';
 $config['caching_duration'] = 3600;
 $config['do_log_performance'] = true;
+$config['redis'] = [
+    'database' => 0,
+    'host' => 'localhost',
+    'port' => 6379
+];
 
 $app = new \Slim\App(['settings' => $config]);
 
@@ -34,7 +39,7 @@ $container['perf_logger'] = function ($c) {
     return new \Jha\PerfLogger($c);
 };
 
-// HTTP CACHE MIDDLEWARE
+// HTTP CACHE HEADERS
 
 $container['http_cache'] = function ($c) {
     return new \Slim\HttpCache\CacheProvider();
@@ -42,6 +47,12 @@ $container['http_cache'] = function ($c) {
 
 $container['jha_expires'] = function ($c) {
     return new \Jha\HttpExpire($c);
+};
+
+// REDIS CACHING
+
+$container['jha_redis'] = function ($c) {
+    return new \Jha\RedisCache($c);
 };
 
 // ROUTES
@@ -77,6 +88,8 @@ $group = $app->group('/jcdecaux_history_api', function () use ($app) {
 // MIDDLEWARE
 
 $app->add(new \Slim\HttpCache\Cache('public', 86400));
+
+$group->add($container['jha_redis']);
 
 $group->add($container['jha_expires']);
 
