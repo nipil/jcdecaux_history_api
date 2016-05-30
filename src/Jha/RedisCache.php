@@ -29,6 +29,8 @@ class RedisCache
 
     public function __invoke($request, $response, $next)
     {
+        $path = $request->getUri()->getPath();
+
         $response = $next($request, $response);
 
         return $response;

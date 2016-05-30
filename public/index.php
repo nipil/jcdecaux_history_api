@@ -11,6 +11,7 @@ $config['log_path'] = __DIR__ . "/../logs/jha.log";
 $config['jcd_data_abs_path'] = '/var/jcd_v2';
 $config['caching_duration'] = 3600;
 $config['do_log_performance'] = true;
+$config['determineRouteBeforeAppMiddleware'] = true;
 $config['redis'] = [
     'database' => 0,
     'host' => 'localhost',
