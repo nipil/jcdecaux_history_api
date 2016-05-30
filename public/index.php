@@ -12,11 +12,13 @@ $config['jcd_data_abs_path'] = '/var/jcd_v2';
 $config['caching_duration'] = 3600;
 $config['do_log_performance'] = true;
 $config['determineRouteBeforeAppMiddleware'] = true;
-$config['redis'] = [
+$config['redis'] = array(
     'database' => 0,
+    'connect_mode' => 'network', // "unixsocket" or "network"
+    'unixsocket' => '/var/run/redis/redis.sock',
     'host' => 'localhost',
     'port' => 6379
-];
+);
 
 $app = new \Slim\App(['settings' => $config]);
 
