@@ -8,22 +8,21 @@ namespace Jha;
 class RedisCache
 {
     protected $logger;
-
     protected $redis;
-
     protected $config;
-
     protected $cacheDuration;
+
+    const ERR_CONNECT_USUPPORTED = "redis unsupported connect mode";
+    const ERR_CONNECT_NETWORK_FAILED = "redis network connect failed";
+    const ERR_CONNECT_UNIXSOCKET_FAILED = "redis unixsocket connect failed";
+    const ERR_CANNOT_SET_KEY = "redis cannot set key";
 
     public function __construct($container)
     {
         $this->logger = new \Monolog\Logger(__CLASS__);
         $this->logger->pushHandler($container['log_stream']);
-
         $this->redis = new \Redis();
-
         $this->config = $container['settings']['redis'];
-
         $this->cacheDuration = $container['settings']['caching_duration'];
     }
 
@@ -32,15 +31,47 @@ class RedisCache
         $path = $request->getUri()->getPath();
 
         $this->connectRedis();
+        $this->redis->setOption(\Redis::OPT_PREFIX, 'Jha:');
+        $this->redis->select($this->config['database']);
 
-        $this->logger->debug("redis "
-            . $this->config['connect_mode']
-            . " isConnected "
-            . $this->redis->isConnected());
+        $cached = $this->getPage($path);
 
-        $response = $next($request, $response);
+        if ($cached === false) {
+            $response = $next($request, $response);
+            $this->cachePage($path, $response);
+            return $response;
+        }
 
-        return $response;
+        $response = $response->withHeader(
+            'Content-type',
+            'application/json;charset=utf-8'
+        );
+
+        return $response->write($cached);
+    }
+
+    public function keyPage($path) {
+        return "page:" . $path;
+    }
+
+    public function getPage($path) {
+        $key = $this->keyPage($path);
+        return $this->redis->get($key);
+    }
+
+    public function setPage($path, $text) {
+        $key = $this->keyPage($path);
+        return $this->redis->setEx($key, $this->cacheDuration, $text);
+    }
+
+    public function cachePage($path, $response) {
+        $body = $response->getBody();
+        $body->rewind();
+        $text = $body->getContents();
+        $result = $this->setPage($path, $text);
+        if ($result !== true) {
+            throw new \Exception(self::ERR_CANNOT_SET_KEY);
+        }
     }
 
     private function connectRedis() {
@@ -55,7 +86,7 @@ class RedisCache
                 );
                 break;
             default:
-                throw new \Exception("unsupported redis connect mode");
+                throw new \Exception(self::ERR_USUPPORTED_CONNECT);
         }
     }
 
@@ -69,7 +100,7 @@ class RedisCache
             300 // retry in msec
         );
         if ($result === false) {
-            throw new \Exception("connectNetwork failed");
+            throw new \Exception(self::ERR_CONNECT_NETWORK_FAILED);
         }
     }
 
@@ -77,7 +108,7 @@ class RedisCache
     {
         $result = $this->redis->open($filename);
         if ($result === false) {
-            throw new \Exception("connectUnixSocket failed");
+            throw new \Exception(self::ERR_CONNECT_UNIXSOCKET_FAILED);
         }
     }
 }
