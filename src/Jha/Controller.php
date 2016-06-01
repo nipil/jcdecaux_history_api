@@ -86,4 +86,40 @@ class Controller
         }
         return $response->withJson($samples);
     }
+
+    public function getActivityGlobal($request, $response, $args)
+    {
+        $args["method"] = __METHOD__;
+        return $response->withJson($args);
+    }
+
+    public function getActivityContract($request, $response, $args)
+    {
+        $args["method"] = __METHOD__;
+        return $response->withJson($args);
+    }
+
+    public function getActivityStation($request, $response, $args)
+    {
+        $args["method"] = __METHOD__;
+        return $response->withJson($args);
+    }
+
+    public function getMinMaxGlobal($request, $response, $args)
+    {
+        $args["method"] = __METHOD__;
+        return $response->withJson($args);
+    }
+
+    public function getMinMaxContract($request, $response, $args)
+    {
+        $args["method"] = __METHOD__;
+        return $response->withJson($args);
+    }
+
+    public function getMinMaxStation($request, $response, $args)
+    {
+        $args["method"] = __METHOD__;
+        return $response->withJson($args);
+    }
 }

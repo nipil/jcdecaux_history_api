@@ -86,6 +86,28 @@ $group = $app->group('/jcdecaux_history_api', function () use ($app) {
         '\Jha\Controller:getSamples'
     );
 
+    $app->group('/stats', function () use ($app) {
+
+        $app->group('/activity/{period:day|week|month|year}', function () use ($app) {
+            $app->get('/global', '\Jha\Controller:getActivityGlobal');
+
+            $app->group('/contracts/{cid:[0-9]+}', function () use ($app) {
+                $app->get('', '\Jha\Controller:getActivityContract');
+
+                $app->get('/stations/{sid:[0-9]+}', '\Jha\Controller:getActivityStation');
+            });
+        });
+
+        $app->group('/minmax/{period:day}', function () use ($app) {
+            $app->get('/global', '\Jha\Controller:getMinMaxGlobal');
+
+            $app->group('/contracts/{cid:[0-9]+}', function () use ($app) {
+                $app->get('', '\Jha\Controller:getMinMaxContract');
+
+                $app->get('/stations/{sid:[0-9]+}', '\Jha\Controller:getMinMaxStation');
+            });
+        });
+    });
 });
 
 // MIDDLEWARE
