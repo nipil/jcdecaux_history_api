@@ -38,7 +38,9 @@ class RedisCache
 
         if ($cached === false) {
             $response = $next($request, $response);
-            $this->cachePage($path, $response);
+            if ($response->getStatusCode() == 200) {
+                $this->cachePage($path, $response);
+            }
             return $response;
         }
 
