@@ -325,4 +325,83 @@ class Dao
         $this->lastError = null;
         return $samples;
     }
+
+    public function getMinMaxGlobal($period)
+    {
+        $statsPdo = $this->getStatsPdo();
+        $timeKey = $this->getPeriodKey($period);
+        $tableName = $this->getTableName("minmax", "global", $period);
+        $stmt = $statsPdo->prepare(
+            "SELECT
+                " . $timeKey . ",
+                min_bikes,
+                max_bikes
+            FROM " . $tableName . "
+            ORDER BY " . $timeKey
+        );
+        $stmt->execute();
+        $samples = $stmt->fetchAll();
+        $this->lastError = null;
+        return $samples;
+    }
+
+    public function getMinMaxContract($period, $contractId)
+    {
+        $statsPdo = $this->getStatsPdo();
+        if ($this->getContract($contractId) === null) {
+            // lastError was set by getContract
+            return null;
+        }
+        $timeKey = $this->getPeriodKey($period);
+        $tableName = $this->getTableName("minmax", "contracts", $period);
+        $stmt = $statsPdo->prepare(
+            "SELECT
+                " . $timeKey . ",
+                contract_id,
+                min_bikes,
+                max_bikes
+            FROM " . $tableName . "
+            WHERE contract_id = :cid
+            ORDER BY " . $timeKey
+        );
+        $stmt->execute(array(
+            ":cid" => $contractId,
+            ));
+        $samples = $stmt->fetchAll();
+        $this->lastError = null;
+        return $samples;
+    }
+
+    public function getMinMaxStation($period, $contractId, $stationId)
+    {
+        $statsPdo = $this->getStatsPdo();
+        if ($this->getStation($contractId, $stationId) === null) {
+            // lastError was set by getStation
+            return null;
+        }
+        $timeKey = $this->getPeriodKey($period);
+        $tableName = $this->getTableName("minmax", "stations", $period);
+        $stmt = $statsPdo->prepare(
+            "SELECT
+                " . $timeKey . ",
+                contract_id,
+                station_number,
+                min_bikes,
+                max_bikes,
+                min_slots,
+                max_slots,
+                num_changes
+            FROM " . $tableName . "
+            WHERE contract_id = :cid
+            AND station_number = :sid
+            ORDER BY " . $timeKey
+        );
+        $stmt->execute(array(
+            ":cid" => $contractId,
+            ":sid" => $stationId
+            ));
+        $samples = $stmt->fetchAll();
+        $this->lastError = null;
+        return $samples;
+    }
 }

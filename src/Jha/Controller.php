@@ -125,19 +125,37 @@ class Controller
 
     public function getMinMaxGlobal($request, $response, $args)
     {
-        $args["method"] = __METHOD__;
-        return $response->withJson($args);
+        $counters = $this->dao->getMinMaxGlobal($args['period']);
+        if ($counters === null) {
+            return $response->withJson(
+                array('error' => $this->dao->getLastError()),
+                404
+            );
+        }
+        return $response->withJson($counters);
     }
 
     public function getMinMaxContract($request, $response, $args)
     {
-        $args["method"] = __METHOD__;
-        return $response->withJson($args);
+        $counters = $this->dao->getMinMaxContract($args['period'], $args['cid']);
+        if ($counters === null) {
+            return $response->withJson(
+                array('error' => $this->dao->getLastError()),
+                404
+            );
+        }
+        return $response->withJson($counters);
     }
 
     public function getMinMaxStation($request, $response, $args)
     {
-        $args["method"] = __METHOD__;
-        return $response->withJson($args);
+        $counters = $this->dao->getMinMaxStation($args['period'], $args['cid'], $args['sid']);
+        if ($counters === null) {
+            return $response->withJson(
+                array('error' => $this->dao->getLastError()),
+                404
+            );
+        }
+        return $response->withJson($counters);
     }
 }
