@@ -66,6 +66,11 @@ class Dao
         return $this->getPdo('app.db', true);
     }
 
+    public function getStatsPdo()
+    {
+        return $this->getPdo('stats.db', true);
+    }
+
     public function getSamplesPdo($date)
     {
         $filename = 'samples_' . strtr($date, '-', '_') . '.db';
@@ -227,6 +232,90 @@ class Dao
             WHERE contract_id = :cid
             AND station_number = :sid
             ORDER BY timestamp"
+        );
+        $stmt->execute(array(
+            ":cid" => $contractId,
+            ":sid" => $stationId
+            ));
+        $samples = $stmt->fetchAll();
+        $this->lastError = null;
+        return $samples;
+    }
+
+    protected function getTableName($stat, $scope, $period) {
+        return $stat . "_" . $scope . "_" . $period;
+    }
+
+    protected function getPeriodKey($period) {
+        return "start_of_" . $period;
+    }
+
+    public function getActivityGlobal($period)
+    {
+        $statsPdo = $this->getStatsPdo();
+        $timeKey = $this->getPeriodKey($period);
+        $tableName = $this->getTableName("activity", "global", $period);
+        $stmt = $statsPdo->prepare(
+            "SELECT
+                " . $timeKey . ",
+                num_changes
+            FROM " . $tableName . "
+            ORDER BY " . $timeKey
+        );
+        $stmt->execute();
+        $samples = $stmt->fetchAll();
+        $this->lastError = null;
+        return $samples;
+    }
+
+    public function getActivityContract($period, $contractId)
+    {
+        $statsPdo = $this->getStatsPdo();
+        if ($this->getContract($contractId) === null) {
+            // lastError was set by getContract
+            return null;
+        }
+        $timeKey = $this->getPeriodKey($period);
+        $tableName = $this->getTableName("activity", "contracts", $period);
+        $stmt = $statsPdo->prepare(
+            "SELECT
+                " . $timeKey . ",
+                contract_id,
+                num_changes,
+                rank_global
+            FROM " . $tableName . "
+            WHERE contract_id = :cid
+            ORDER BY " . $timeKey
+        );
+        $stmt->execute(array(
+            ":cid" => $contractId,
+            ));
+        $samples = $stmt->fetchAll();
+        $this->lastError = null;
+        return $samples;
+    }
+
+    public function getActivityStation($period, $contractId, $stationId)
+    {
+        $statsPdo = $this->getStatsPdo();
+        if ($this->getStation($contractId, $stationId) === null) {
+            // lastError was set by getStation
+            return null;
+        }
+        $timeKey = $this->getPeriodKey($period);
+        $tableName = $this->getTableName("activity", "stations", $period);
+        $stmt = $statsPdo->prepare(
+            "SELECT
+                " . $timeKey . ",
+                contract_id,
+                station_number,
+                num_changes,
+                rank_contract,
+                rank_global
+            FROM " . $tableName . "
+            WHERE contract_id = :cid
+            AND station_number = :sid
+            ORDER BY " . $timeKey
         );
         $stmt->execute(array(
             ":cid" => $contractId,

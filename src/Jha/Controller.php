@@ -89,20 +89,38 @@ class Controller
 
     public function getActivityGlobal($request, $response, $args)
     {
-        $args["method"] = __METHOD__;
-        return $response->withJson($args);
+        $counters = $this->dao->getActivityGlobal($args['period']);
+        if ($counters === null) {
+            return $response->withJson(
+                array('error' => $this->dao->getLastError()),
+                404
+            );
+        }
+        return $response->withJson($counters);
     }
 
     public function getActivityContract($request, $response, $args)
     {
-        $args["method"] = __METHOD__;
-        return $response->withJson($args);
+        $counters = $this->dao->getActivityContract($args['period'], $args['cid']);
+        if ($counters === null) {
+            return $response->withJson(
+                array('error' => $this->dao->getLastError()),
+                404
+            );
+        }
+        return $response->withJson($counters);
     }
 
     public function getActivityStation($request, $response, $args)
     {
-        $args["method"] = __METHOD__;
-        return $response->withJson($args);
+        $counters = $this->dao->getActivityStation($args['period'], $args['cid'], $args['sid']);
+        if ($counters === null) {
+            return $response->withJson(
+                array('error' => $this->dao->getLastError()),
+                404
+            );
+        }
+        return $response->withJson($counters);
     }
 
     public function getMinMaxGlobal($request, $response, $args)
