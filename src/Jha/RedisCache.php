@@ -12,7 +12,7 @@ class RedisCache
     protected $config;
     protected $cacheDuration;
 
-    const ERR_CONNECT_USUPPORTED = "redis unsupported connect mode";
+    const ERR_CONNECT_UNSUPPORTED = "redis unsupported connect mode";
     const ERR_CONNECT_NETWORK_FAILED = "redis network connect failed";
     const ERR_CONNECT_UNIXSOCKET_FAILED = "redis unixsocket connect failed";
     const ERR_CANNOT_SET_KEY = "redis cannot set key";
@@ -135,7 +135,7 @@ class RedisCache
                 );
                 break;
             default:
-                throw new \Exception(self::ERR_USUPPORTED_CONNECT);
+                throw new \Exception(self::ERR_CONNECT_UNSUPPORTED);
         }
     }
 
