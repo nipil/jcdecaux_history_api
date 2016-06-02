@@ -32,7 +32,6 @@ class RedisCache
 
         $this->connectRedis();
         $this->redis->setOption(\Redis::OPT_PREFIX, 'Jha:');
-        $this->redis->setOption(\Redis::OPT_SERIALIZER, $this->config['serializer']);
         $this->redis->select($this->config['database']);
 
         $cacheEntry = $this->getPage($path);
@@ -50,7 +49,16 @@ class RedisCache
             return $response;
         }
 
-        return $this->responseFromCacheEntry($cacheEntry);
+        $response = $this->responseFromCacheEntry($cacheEntry);
+        return $response;
+    }
+
+    protected function activateSerialization() {
+        $this->redis->setOption(\Redis::OPT_SERIALIZER, $this->config['serializer']);
+    }
+
+    protected function deactivateSerialization() {
+        $this->redis->setOption(\Redis::OPT_SERIALIZER, \Redis::SERIALIZER_NONE);
     }
 
     public function keyPage($path) {
@@ -59,12 +67,22 @@ class RedisCache
 
     public function getPage($path) {
         $key = $this->keyPage($path);
-        return $this->redis->get($key);
+        $this->activateSerialization();
+        $data = $this->redis->get($key);
+        $this->deactivateSerialization();
+        return $data;
     }
 
     public function setPage($path, $data) {
         $key = $this->keyPage($path);
-        return $this->redis->setEx($key, $this->cacheDuration, $data);
+        $this->activateSerialization();
+        $result = $this->redis->setEx(
+            $key,
+            $this->cacheDuration,
+            $data
+        );
+        $this->deactivateSerialization();
+        return $result;
     }
 
     public function responseToCacheEntry($response) {
