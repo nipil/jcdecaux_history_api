@@ -57,14 +57,6 @@ class RedisCache
         return $response;
     }
 
-    protected function activateSerialization() {
-        $this->redis->setOption(\Redis::OPT_SERIALIZER, $this->config['serializer']);
-    }
-
-    protected function deactivateSerialization() {
-        $this->redis->setOption(\Redis::OPT_SERIALIZER, \Redis::SERIALIZER_NONE);
-    }
-
     public function keyPage($path) {
         return "page:" . $path;
     }
