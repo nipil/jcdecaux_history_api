@@ -50,7 +50,7 @@ class RedisCache
             return $response;
         }
 
-        return $this->responseFromCacheEntry($cacheEntry, $response);
+        return $this->responseFromCacheEntry($cacheEntry);
     }
 
     public function keyPage($path) {
@@ -81,13 +81,10 @@ class RedisCache
         return $cacheEntry;
     }
 
-    public function responseFromCacheEntry($cacheEntry, $response_template) {
-        // write to body
-        $body = $response_template->getBody();
-        $body->rewind();
-        $body->write($cacheEntry['body']);
-        // set header and code
-        return $response_template->withStatus(
+    public function responseFromCacheEntry($cacheEntry) {
+        $response = new \Slim\Http\Response();
+        $response->getBody()->write($cacheEntry['body']);
+        return $response->withStatus(
             $cacheEntry['code']
         )->withHeader(
             "Content-Type",
