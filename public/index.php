@@ -13,8 +13,19 @@ $config['caching_duration'] = 3600;
 $config['do_log_performance'] = true;
 $config['determineRouteBeforeAppMiddleware'] = true;
 $config['redis'] = array(
+    /*
+     * serializer:
+     * - \Redis::SERIALIZER_PHP
+     * - \Redis::SERIALIZER_IGBINARY (requires module)
+     */
+    'serializer' => \Redis::SERIALIZER_PHP,
     'database' => 0,
-    'connect_mode' => 'network', // "unixsocket" or "network"
+    /*
+     * connect_mode:
+     * - "unixsocket"
+     * - "network"
+     */
+    'connect_mode' => 'network',
     'unixsocket' => '/var/run/redis/redis.sock',
     'host' => 'localhost',
     'port' => 6379

@@ -32,24 +32,25 @@ class RedisCache
 
         $this->connectRedis();
         $this->redis->setOption(\Redis::OPT_PREFIX, 'Jha:');
+        $this->redis->setOption(\Redis::OPT_SERIALIZER, $this->config['serializer']);
         $this->redis->select($this->config['database']);
 
-        $cached = $this->getPage($path);
+        $cacheEntry = $this->getPage($path);
 
-        if ($cached === false) {
+        if ($cacheEntry === false) {
+            // actually generate page
             $response = $next($request, $response);
-            if ($response->getStatusCode() == 200) {
-                $this->cachePage($path, $response);
+            // convert generated page to cacheEntry
+            $cacheEntry = $this->responseToCacheEntry($response);
+            // store cacheEntry to redis db
+            $result = $this->setPage($path, $cacheEntry);
+            if ($result !== true) {
+                throw new \Exception(self::ERR_CANNOT_SET_KEY);
             }
             return $response;
         }
 
-        $response = $response->withHeader(
-            'Content-type',
-            'application/json;charset=utf-8'
-        );
-
-        return $response->write($cached);
+        return $this->responseFromCacheEntry($cacheEntry, $response);
     }
 
     public function keyPage($path) {
@@ -61,19 +62,37 @@ class RedisCache
         return $this->redis->get($key);
     }
 
-    public function setPage($path, $text) {
+    public function setPage($path, $data) {
         $key = $this->keyPage($path);
-        return $this->redis->setEx($key, $this->cacheDuration, $text);
+        return $this->redis->setEx($key, $this->cacheDuration, $data);
     }
 
-    public function cachePage($path, $response) {
+    public function responseToCacheEntry($response) {
+        $code = $response->getStatusCode();
         $body = $response->getBody();
         $body->rewind();
         $text = $body->getContents();
-        $result = $this->setPage($path, $text);
-        if ($result !== true) {
-            throw new \Exception(self::ERR_CANNOT_SET_KEY);
-        }
+        $content_type = $response->getHeaderLine("Content-Type");
+        $cacheEntry = array(
+            'code' => $code,
+            'content_type' => $content_type,
+            'body' => $text,
+        );
+        return $cacheEntry;
+    }
+
+    public function responseFromCacheEntry($cacheEntry, $response_template) {
+        // write to body
+        $body = $response_template->getBody();
+        $body->rewind();
+        $body->write($cacheEntry['body']);
+        // set header and code
+        return $response_template->withStatus(
+            $cacheEntry['code']
+        )->withHeader(
+            "Content-Type",
+            $cacheEntry['content_type']
+        );
     }
 
     private function connectRedis() {
