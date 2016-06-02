@@ -99,7 +99,7 @@ class RedisCache
         $code = $response->getStatusCode();
         $body = $response->getBody();
         $body->rewind();
-        $text = $body->getContents()."toto";
+        $text = $body->getContents();
         $content_type = $response->getHeaderLine("Content-Type");
         $pageEntry = array(
             'code' => $code,
