@@ -16,6 +16,8 @@ class RedisCache
     const ERR_CONNECT_NETWORK_FAILED = "redis network connect failed";
     const ERR_CONNECT_UNIXSOCKET_FAILED = "redis unixsocket connect failed";
     const ERR_CANNOT_SET_KEY = "redis cannot set key";
+    const ERR_CANNOT_SET_TTL = "redis cannot set ttl";
+    const ERR_NON_NUMERIC_HTTP_CODE = "non numeric http code";
 
     public function __construct($container)
     {
@@ -34,22 +36,24 @@ class RedisCache
         $this->redis->setOption(\Redis::OPT_PREFIX, 'Jha:');
         $this->redis->select($this->config['database']);
 
-        $cacheEntry = $this->getPage($path);
-
-        if ($cacheEntry === false) {
+        // handle page cache/generation
+        $pageKey = $this->keyPage($path);
+        $exists = $this->existsPage($pageKey);
+        if ($exists) {
+            // get actual cached data
+            $pageEntry = $this->retrievePage($pageKey);
+            // build response out of pageEntry
+            $response = $this->responseFromPageEntry($pageEntry);
+        } else {
             // actually generate page
             $response = $next($request, $response);
-            // convert generated page to cacheEntry
-            $cacheEntry = $this->responseToCacheEntry($response);
-            // store cacheEntry to redis db
-            $result = $this->setPage($path, $cacheEntry);
-            if ($result !== true) {
-                throw new \Exception(self::ERR_CANNOT_SET_KEY);
-            }
-            return $response;
+            // convert generated page to pageEntry
+            $pageEntry = $this->responseToPageEntry($response);
+            // store pageEntry to redis db
+            $this->storePage($pageKey, $pageEntry);
         }
 
-        $response = $this->responseFromCacheEntry($cacheEntry);
+        // serve page
         return $response;
     }
 
@@ -65,48 +69,65 @@ class RedisCache
         return "page:" . $path;
     }
 
-    public function getPage($path) {
-        $key = $this->keyPage($path);
-        $this->activateSerialization();
-        $data = $this->redis->get($key);
-        $this->deactivateSerialization();
-        return $data;
-    }
-
-    public function setPage($path, $data) {
-        $key = $this->keyPage($path);
-        $this->activateSerialization();
-        $result = $this->redis->setEx(
-            $key,
-            $this->cacheDuration,
-            $data
-        );
-        $this->deactivateSerialization();
+    public function existsPage($key) {
+        $result = $this->redis->exists($key);
         return $result;
     }
 
-    public function responseToCacheEntry($response) {
+    public function retrievePage($key) {
+        $pageEntry = $this->redis->hMGet(
+            $key,
+            array(
+                'code',
+                'content_type',
+                'body'
+            )
+        );
+        return $pageEntry;
+    }
+
+    public function storePage($key, $pageEntry) {
+        $result = $this->redis->hMSet(
+            $key,
+            $pageEntry
+        );
+        if ($result !== true) {
+            throw new \Exception(self::ERR_CANNOT_SET_KEY);
+        }
+        $result = $this->redis->expire(
+            $key,
+            $this->cacheDuration
+        );
+        if ($result !== true) {
+            throw new \Exception(self::ERR_CANNOT_SET_TTL);
+        }
+    }
+
+    public function responseToPageEntry($response) {
         $code = $response->getStatusCode();
         $body = $response->getBody();
         $body->rewind();
-        $text = $body->getContents();
+        $text = $body->getContents()."toto";
         $content_type = $response->getHeaderLine("Content-Type");
-        $cacheEntry = array(
+        $pageEntry = array(
             'code' => $code,
             'content_type' => $content_type,
             'body' => $text,
         );
-        return $cacheEntry;
+        return $pageEntry;
     }
 
-    public function responseFromCacheEntry($cacheEntry) {
+    public function responseFromPageEntry($pageEntry) {
         $response = new \Slim\Http\Response();
-        $response->getBody()->write($cacheEntry['body']);
+        $response->getBody()->write($pageEntry['body']);
+        if (!is_numeric($pageEntry['code'])) {
+            throw new \Exception(self::ERR_NON_NUMERIC_HTTP_CODE);
+        }
         return $response->withStatus(
-            $cacheEntry['code']
+            (int) $pageEntry['code']
         )->withHeader(
             "Content-Type",
-            $cacheEntry['content_type']
+            $pageEntry['content_type']
         );
     }
 
