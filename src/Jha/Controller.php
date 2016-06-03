@@ -27,7 +27,6 @@ class Controller
     public function getDates($request, $response, $args)
     {
         $dates = $this->dao->getDates();
-        $response = $this->setCacheHint($response, 60);
         $response = $response->withJson($dates);
         return $response;
     }
