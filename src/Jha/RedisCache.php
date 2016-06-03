@@ -42,6 +42,7 @@ class RedisCache
         // handle page cache/generation
         $pageKey = $this->keyPage($path);
         $exists = $this->existsPage($pageKey);
+        //$this->logger->debug("cached: " . ($exists+0));
         if ($exists) {
             // get actual cached data
             $pageEntry = $this->retrievePage($pageKey);
@@ -76,7 +77,7 @@ class RedisCache
                 'code',
                 'content_type',
                 'body',
-                'cache_hint'
+                'cache_max_timestamp'
             )
         );
         return $pageEntry;
@@ -92,7 +93,7 @@ class RedisCache
         }
         $result = $this->redis->expire(
             $key,
-            $pageEntry['cache_hint']
+            $pageEntry['cache_duration']
         );
         if ($result !== true) {
             throw new \Exception(self::ERR_CANNOT_SET_TTL);
@@ -105,15 +106,16 @@ class RedisCache
         $body->rewind();
         $text = $body->getContents();
         $content_type = $response->getHeaderLine(self::HEADER_CONTENT_TYPE);
-        $cacheHint = $this->cacheDuration;
+        $cacheDuration = $this->cacheDuration;
         if ($response->hasHeader(\Jha\Controller::HEADER_CACHE_HINT)) {
-            $cacheHint = $response->getHeaderLine(\Jha\Controller::HEADER_CACHE_HINT);
+            $cacheDuration = $response->getHeaderLine(\Jha\Controller::HEADER_CACHE_HINT);
         }
         $pageEntry = array(
             'code' => $code,
             'content_type' => $content_type,
             'body' => $text,
-            'cache_hint' => $cacheHint,
+            'cache_duration' => $cacheDuration,
+            'cache_max_timestamp' => time() + $cacheDuration,
         );
         return $pageEntry;
     }
@@ -124,14 +126,14 @@ class RedisCache
         if (!is_numeric($pageEntry['code'])) {
             throw new \Exception(self::ERR_NON_NUMERIC_HTTP_CODE);
         }
-        if (!is_numeric($pageEntry['cache_hint'])) {
+        if (!is_numeric($pageEntry['cache_max_timestamp'])) {
             throw new \Exception(self::ERR_NON_NUMERIC_CACHE_HINT);
         }
         return $response->withStatus(
             (int) $pageEntry['code']
         )->withHeader(
             \Jha\Controller::HEADER_CACHE_HINT,
-            $pageEntry['cache_hint']
+            $pageEntry['cache_max_timestamp']
         )->withHeader(
             self::HEADER_CONTENT_TYPE,
             $pageEntry['content_type']

@@ -9,12 +9,16 @@ class HttpExpire
 {
     protected $httpCache;
     protected $cacheDuration;
+    protected $logger;
 
     const INVALID_CUSTOM_EXPIRE = "invalid custom expire value";
     const HEADER_EXPIRE = "Expires";
 
     public function __construct($container)
     {
+        $this->logger = new \Monolog\Logger(__CLASS__);
+        $this->logger->pushHandler($container['log_stream']);
+
         $this->httpCache = $container['http_cache'];
         $this->cacheDuration = $container['settings']['caching_duration'];
     }
@@ -23,26 +27,18 @@ class HttpExpire
     {
         $response = $next($request, $response);
 
-        $duration = $this->cacheDuration;
+        $max_timestamp = null;
 
         if ($response->hasHeader(\Jha\Controller::HEADER_CACHE_HINT)) {
-            $duration = $response->getHeaderLine(\Jha\Controller::HEADER_CACHE_HINT);
-        }
-
-        $response = $this->setExpireHeaders($response, $duration);
-
-        return $response;
-    }
-
-    public function setExpireHeaders($response, $duration)
-    {
-        if ($duration === null) {
-            $duration = $this->cacheDuration;
+            // integer check already done in "responseFromPageEntry"
+            $max_timestamp = (int) $response->getHeaderLine(\Jha\Controller::HEADER_CACHE_HINT);
+        } else {
+            $max_timestamp = time() + $this->cacheDuration;
         }
 
         return $this->httpCache->withExpires(
             $response,
-            time() + $duration
+            $max_timestamp
         );
     }
 }
