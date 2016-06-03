@@ -125,6 +125,8 @@ $group->add($container['jha_expires']);
 
 $group->add($container['perf_logger']);
 
+$group->add('\Jha\Controller:middlewareClearCacheHint');
+
 // RUN
 
 $app->run();

@@ -18,6 +18,9 @@ class RedisCache
     const ERR_CANNOT_SET_KEY = "redis cannot set key";
     const ERR_CANNOT_SET_TTL = "redis cannot set ttl";
     const ERR_NON_NUMERIC_HTTP_CODE = "non numeric http code";
+    const ERR_NON_NUMERIC_CACHE_HINT = "non numeric cache hint";
+
+    const HEADER_CONTENT_TYPE = "Content-Type";
 
     public function __construct($container)
     {
@@ -72,7 +75,8 @@ class RedisCache
             array(
                 'code',
                 'content_type',
-                'body'
+                'body',
+                'cache_hint'
             )
         );
         return $pageEntry;
@@ -88,7 +92,7 @@ class RedisCache
         }
         $result = $this->redis->expire(
             $key,
-            $this->cacheDuration
+            $pageEntry['cache_hint']
         );
         if ($result !== true) {
             throw new \Exception(self::ERR_CANNOT_SET_TTL);
@@ -100,11 +104,16 @@ class RedisCache
         $body = $response->getBody();
         $body->rewind();
         $text = $body->getContents();
-        $content_type = $response->getHeaderLine("Content-Type");
+        $content_type = $response->getHeaderLine(self::HEADER_CONTENT_TYPE);
+        $cacheHint = $this->cacheDuration;
+        if ($response->hasHeader(\Jha\Controller::HEADER_CACHE_HINT)) {
+            $cacheHint = $response->getHeaderLine(\Jha\Controller::HEADER_CACHE_HINT);
+        }
         $pageEntry = array(
             'code' => $code,
             'content_type' => $content_type,
             'body' => $text,
+            'cache_hint' => $cacheHint,
         );
         return $pageEntry;
     }
@@ -115,10 +124,16 @@ class RedisCache
         if (!is_numeric($pageEntry['code'])) {
             throw new \Exception(self::ERR_NON_NUMERIC_HTTP_CODE);
         }
+        if (!is_numeric($pageEntry['cache_hint'])) {
+            throw new \Exception(self::ERR_NON_NUMERIC_CACHE_HINT);
+        }
         return $response->withStatus(
             (int) $pageEntry['code']
         )->withHeader(
-            "Content-Type",
+            \Jha\Controller::HEADER_CACHE_HINT,
+            $pageEntry['cache_hint']
+        )->withHeader(
+            self::HEADER_CONTENT_TYPE,
             $pageEntry['content_type']
         );
     }

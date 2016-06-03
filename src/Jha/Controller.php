@@ -10,6 +10,8 @@ class Controller
     protected $logger;
     protected $dao;
 
+    const HEADER_CACHE_HINT = "X-JHA-CACHE-HINT";
+
     public function __construct($container)
     {
         $this->logger = new \Monolog\Logger(__CLASS__);
@@ -18,9 +20,14 @@ class Controller
         $this->dao = $container['jha_dao'];
     }
 
+    public function setCacheHint($response, $duration) {
+        return $response->withHeader(self::HEADER_CACHE_HINT, $duration);
+    }
+
     public function getDates($request, $response, $args)
     {
         $dates = $this->dao->getDates();
+        $response = $this->setCacheHint($response, 60);
         $response = $response->withJson($dates);
         return $response;
     }
@@ -157,5 +164,15 @@ class Controller
             );
         }
         return $response->withJson($counters);
+    }
+
+    public function middlewareClearCacheHint($request, $response, $next) {
+        $response = $next($request, $response);
+
+        if ($response->hasHeader(\Jha\Controller::HEADER_CACHE_HINT)) {
+            $response = $response->withoutHeader(self::HEADER_CACHE_HINT);
+        }
+
+        return $response;
     }
 }
