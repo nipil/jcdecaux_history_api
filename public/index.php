@@ -67,6 +67,8 @@ $container['jha_redis'] = function ($c) {
 
 $group = $app->group('/jcdecaux_history_api', function () use ($app) {
 
+    $app->get('/infos', '\Jha\Controller:getInfos');
+
     $app->get('/dates', '\Jha\Controller:getDates');
 
     $app->group('/contracts', function () use ($app) {

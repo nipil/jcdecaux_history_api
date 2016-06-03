@@ -165,6 +165,18 @@ class Controller
         return $response->withJson($counters);
     }
 
+    public function getInfos($request, $response, $args)
+    {
+        $infos = $this->dao->getInfos();
+        if ($infos === null) {
+            return $response->withJson(
+                array('error' => $this->dao->getLastError()),
+                404
+            );
+        }
+        return $response->withJson($infos);
+    }
+
     public function middlewareClearCacheHint($request, $response, $next) {
         $response = $next($request, $response);
 

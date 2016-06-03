@@ -15,6 +15,7 @@ class Dao
     const ERR_CONTRACT_NOT_FOUND = "contract not found";
     const ERR_STATION_NOT_FOUND = "station not found";
     const ERR_DATE_NOT_FOUND = "date not found";
+    const ERR_CANNOT_READ_DIRECTORY = "cannot read directory";
 
     public function __construct($container)
     {
@@ -95,7 +96,7 @@ class Dao
         $dates = [];
         $handle = opendir($this->dataPath);
         if ($handle == false) {
-            throw new \Exception("Cannot read directory " . $this->dataPath);
+            throw new \Exception(self::ERR_CANNOT_READ_DIRECTORY . " " . $this->dataPath);
         }
         while (false !== ($entry = readdir($handle))) {
             $matches = null;
@@ -403,5 +404,61 @@ class Dao
         $samples = $stmt->fetchAll();
         $this->lastError = null;
         return $samples;
+    }
+
+    public function getDatabaseSize() {
+        $entries = glob(
+            $this->dataPath . '/{app,stats,samples_*_*_*}.db',
+            GLOB_BRACE | GLOB_ERR
+        );
+        if ($entries === false) {
+            throw new \Exception(self::ERR_CANNOT_READ_DIRECTORY . " " . $this->dataPath);
+        }
+        $this->logger->debug(__METHOD__, array(
+            "$entries" => $entries
+        ));
+        $totalSize = 0;
+        foreach ($entries as $entry) {
+            $size = filesize($entry);
+            $totalSize += $size;
+        }
+        return $totalSize;
+    }
+
+    public function getStationCount()
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT COUNT(*) FROM (
+                SELECT DISTINCT
+                    contract_id,
+                    station_number
+                FROM old_samples
+            )"
+        );
+        $stmt->execute();
+        $result = $stmt->fetch(\PDO::FETCH_NUM);
+        return (int) $result[0];
+    }
+
+    public function getSampleCount() {
+        $statsPdo = $this->getStatsPdo();
+        $stmt = $statsPdo->prepare(
+            "SELECT SUM(num_changes)
+            FROM activity_global_year"
+        );
+        $stmt->execute();
+        $result = $stmt->fetch(\PDO::FETCH_NUM);
+        return (int) $result[0];
+    }
+
+    public function getInfos() {
+        $infos = [];
+        $infos["dates_count"] = count($this->getDates());
+        $infos["contract_count"] = count($this->getContracts());
+        $infos["station_count"] = $this->getStationCount();
+        $infos["sample_count"] = $this->getSampleCount();
+        $infos["database_size"] = $this->getDatabaseSize();
+        $this->logger->debug(__METHOD__, array("infos" => $infos));
+        return $infos;
     }
 }
