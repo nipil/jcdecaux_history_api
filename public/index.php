@@ -121,6 +121,14 @@ $group = $app->group('/jcdecaux_history_api', function () use ($app) {
 
 $app->add(new \Slim\HttpCache\Cache('public', 86400));
 
+$app->add(function ($request, $response, $next) {
+    $response = $next($request, $response);
+    return $response->withHeader(
+        "Access-Control-Allow-Origin",
+        "*"
+    );
+});
+
 $group->add($container['jha_redis']);
 
 $group->add($container['jha_expires']);
