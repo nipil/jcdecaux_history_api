@@ -79,6 +79,10 @@ class Controller
 
     public function getSamples($request, $response, $args)
     {
+        // set shorter cache for today data
+        if ($args['date'] == date("Y-m-d")) {
+            $response = $this->setCacheHint($response, 600);
+        }
         $samples = $this->dao->getSamples(
             $args['date'],
             $args['cid'],
