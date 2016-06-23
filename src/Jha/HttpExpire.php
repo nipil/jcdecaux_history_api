@@ -33,7 +33,7 @@ class HttpExpire
             // integer check already done in "responseFromPageEntry"
             $max_timestamp = (int) $response->getHeaderLine(\Jha\Controller::HEADER_CACHE_HINT);
         } else {
-            $max_timestamp = time() + $this->cacheDuration;
+            return $response;
         }
 
         return $this->httpCache->withExpires(
