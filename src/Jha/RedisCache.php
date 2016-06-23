@@ -55,9 +55,19 @@ class RedisCache
             $pageEntry = $this->responseToPageEntry($response);
             // store pageEntry to redis db
             $this->storePage($pageKey, $pageEntry);
+            // convert cache hint to max timestamp for HttpExpire
+            $response = $this->updateCacheHint($response);
         }
 
         // serve page
+        return $response;
+    }
+
+    private function updateCacheHint($response) {
+        if ($response->hasHeader(\Jha\Controller::HEADER_CACHE_HINT)) {
+            $max_timestamp = time() + (int) $response->getHeaderLine(\Jha\Controller::HEADER_CACHE_HINT);
+            $response = $response->withHeader(\Jha\Controller::HEADER_CACHE_HINT, $max_timestamp);
+        }
         return $response;
     }
 
