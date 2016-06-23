@@ -8,7 +8,6 @@ namespace Jha;
 class HttpExpire
 {
     protected $httpCache;
-    protected $cacheDuration;
     protected $logger;
 
     const INVALID_CUSTOM_EXPIRE = "invalid custom expire value";
@@ -20,7 +19,6 @@ class HttpExpire
         $this->logger->pushHandler($container['log_stream']);
 
         $this->httpCache = $container['http_cache'];
-        $this->cacheDuration = $container['settings']['caching_duration'];
     }
 
     public function __invoke($request, $response, $next)
