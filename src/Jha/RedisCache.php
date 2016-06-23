@@ -41,22 +41,21 @@ class RedisCache
         $pageKey = $this->keyPage($path);
         $exists = $this->existsPage($pageKey);
         //$this->logger->debug("cached: " . ($exists+0));
-        if ($exists) {
-            // get actual cached data
-            $pageEntry = $this->retrievePage($pageKey);
-            // build response out of pageEntry
-            $response = $this->responseFromPageEntry($pageEntry);
-        } else {
+
+        if (! $exists) {
             // actually generate page
             $response = $next($request, $response);
             // convert generated page to pageEntry
             $pageEntry = $this->responseToPageEntry($response);
             // store pageEntry to redis db
             $this->storePage($pageKey, $pageEntry);
-            // convert cache hint to max timestamp for HttpExpire
-            $response = $this->updateCacheHint($response);
+        } else {
+            // get cached data
+            $pageEntry = $this->retrievePage($pageKey);
         }
 
+        // build response out of pageEntry
+        $response = $this->responseFromPageEntry($pageEntry);
         // serve page
         return $response;
     }
@@ -85,7 +84,8 @@ class RedisCache
                 'code',
                 'content_type',
                 'body',
-                'cache_max_timestamp'
+                'entry_ttl',
+                'max_timestamp'
             )
         );
         return $pageEntry;
@@ -101,7 +101,7 @@ class RedisCache
         }
         $result = $this->redis->expire(
             $key,
-            $pageEntry['cache_duration']
+            $pageEntry['entry_ttl']
         );
         if ($result !== true) {
             throw new \Exception(self::ERR_CANNOT_SET_TTL);
@@ -115,19 +115,19 @@ class RedisCache
         $text = $body->getContents();
         $content_type = $response->getHeaderLine(self::HEADER_CONTENT_TYPE);
         // default values
-        $cacheDuration = $this->config['default_ttl'];
+        $entryTTL = $this->config['default_ttl'];
         $maxTimestamp = -1;
         // update if there is a cache hint
         if ($response->hasHeader(\Jha\Controller::HEADER_CACHE_HINT)) {
-            $cacheDuration = $response->getHeaderLine(\Jha\Controller::HEADER_CACHE_HINT);
-            $maxTimestamp = time() + $cacheDuration;
+            $entryTTL = $response->getHeaderLine(\Jha\Controller::HEADER_CACHE_HINT);
+            $maxTimestamp = time() + $entryTTL;
         }
         $pageEntry = array(
             'code' => $code,
             'content_type' => $content_type,
             'body' => $text,
-            'cache_duration' => $cacheDuration,
-            'cache_max_timestamp' => $maxTimestamp,
+            'entry_ttl' => $entryTTL,
+            'max_timestamp' => $maxTimestamp,
         );
         return $pageEntry;
     }
@@ -138,18 +138,25 @@ class RedisCache
         if (!is_numeric($pageEntry['code'])) {
             throw new \Exception(self::ERR_NON_NUMERIC_HTTP_CODE);
         }
-        if (!is_numeric($pageEntry['cache_max_timestamp'])) {
+        if (!is_numeric($pageEntry['max_timestamp'])) {
             throw new \Exception(self::ERR_NON_NUMERIC_CACHE_HINT);
         }
-        return $response->withStatus(
+        // apply what is always present
+        $response = $response->withStatus(
             (int) $pageEntry['code']
-        )->withHeader(
-            \Jha\Controller::HEADER_CACHE_HINT,
-            $pageEntry['cache_max_timestamp']
         )->withHeader(
             self::HEADER_CONTENT_TYPE,
             $pageEntry['content_type']
         );
+        // apply optionnal elements
+        if ($pageEntry['max_timestamp'] > 0) {
+            $response = $response->withHeader(
+                \Jha\Controller::HEADER_CACHE_HINT,
+                $pageEntry['max_timestamp']
+            );
+        }
+        // return final result
+        return $response;
     }
 
     private function connectRedis() {
