@@ -10,7 +10,6 @@ class RedisCache
     protected $logger;
     protected $redis;
     protected $config;
-    protected $cacheDuration;
 
     const ERR_CONNECT_UNSUPPORTED = "redis unsupported connect mode";
     const ERR_CONNECT_NETWORK_FAILED = "redis network connect failed";
@@ -28,7 +27,6 @@ class RedisCache
         $this->logger->pushHandler($container['log_stream']);
         $this->redis = new \Redis();
         $this->config = $container['settings']['redis'];
-        $this->cacheDuration = $container['settings']['caching_duration'];
     }
 
     public function __invoke($request, $response, $next)
@@ -116,16 +114,20 @@ class RedisCache
         $body->rewind();
         $text = $body->getContents();
         $content_type = $response->getHeaderLine(self::HEADER_CONTENT_TYPE);
-        $cacheDuration = $this->cacheDuration;
+        // default values
+        $cacheDuration = $this->config['default_ttl'];
+        $maxTimestamp = -1;
+        // update if there is a cache hint
         if ($response->hasHeader(\Jha\Controller::HEADER_CACHE_HINT)) {
             $cacheDuration = $response->getHeaderLine(\Jha\Controller::HEADER_CACHE_HINT);
+            $maxTimestamp = time() + $cacheDuration;
         }
         $pageEntry = array(
             'code' => $code,
             'content_type' => $content_type,
             'body' => $text,
             'cache_duration' => $cacheDuration,
-            'cache_max_timestamp' => time() + $cacheDuration,
+            'cache_max_timestamp' => $maxTimestamp,
         );
         return $pageEntry;
     }

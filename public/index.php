@@ -9,10 +9,10 @@ date_default_timezone_set('UTC'); // jcd data uses UTC
 $config['displayErrorDetails'] = true;
 $config['log_path'] = __DIR__ . "/../logs/jha.log";
 $config['jcd_data_abs_path'] = '/var/jcd_v2';
-$config['caching_duration'] = 3600;
 $config['do_log_performance'] = true;
 $config['determineRouteBeforeAppMiddleware'] = true;
 $config['redis'] = array(
+    'default_ttl' => 3600,
     'database' => 0,
     /*
      * connect_mode:
