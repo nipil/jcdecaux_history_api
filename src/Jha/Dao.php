@@ -461,4 +461,29 @@ class Dao
         $this->logger->debug(__METHOD__, array("infos" => $infos));
         return $infos;
     }
+
+    public function getContractsRepartition($max_age_days = 7) {
+        $statsPdo = $this->getStatsPdo();
+        $tableName = $this->getTableName("minmax", "global", "day");
+        $stmt = $statsPdo->prepare(
+            "SELECT
+                contract_id,
+                MAX(max_bikes) AS max_bikes
+            FROM minmax_contracts_day
+            WHERE start_of_day >= strftime(
+                '%s',
+                date(
+                    (SELECT MAX(start_of_day) FROM minmax_contracts_day),
+                    'unixepoch',
+                    '-" . $max_age_days . " days'
+                )
+            )
+            GROUP BY contract_id
+            ORDER BY contract_id"
+        );
+        $stmt->execute();
+        $samples = $stmt->fetchAll();
+        $this->lastError = null;
+        return $samples;
+    }
 }

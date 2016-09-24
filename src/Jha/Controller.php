@@ -181,6 +181,18 @@ class Controller
         return $response->withJson($infos);
     }
 
+    public function getContractsRepartition($request, $response, $args)
+    {
+        $reparition = $this->dao->getContractsRepartition();
+        if ($reparition === null) {
+            return $response->withJson(
+                array('error' => $this->dao->getLastError()),
+                404
+            );
+        }
+        return $response->withJson($reparition);
+    }
+
     public function middlewareClearCacheHint($request, $response, $next) {
         $response = $next($request, $response);
 
