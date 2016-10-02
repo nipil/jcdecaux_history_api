@@ -486,4 +486,59 @@ class Dao
         $this->lastError = null;
         return $samples;
     }
+
+    public function getRankingContracts($period)
+    {
+        $statsPdo = $this->getStatsPdo();
+        $timeKey = $this->getPeriodKey($period);
+        $tableName = $this->getTableName("activity", "contracts", $period);
+        $stmt = $statsPdo->prepare(
+            "SELECT
+                " . $timeKey . ",
+                contract_id,
+                num_changes,
+                rank_global
+            FROM " . $tableName . "
+            WHERE " . $timeKey . " = (SELECT MAX(" . $timeKey . ") FROM " . $tableName . ")
+            ORDER BY rank_global"
+        );
+        $stmt->execute();
+        $samples = $stmt->fetchAll();
+        $this->lastError = null;
+        return $samples;
+    }
+
+    public function getRankingStations($period, $contractId)
+    {
+        $statsPdo = $this->getStatsPdo();
+        if ($this->getContract($contractId) === null) {
+            // lastError was set by getContract
+            return null;
+        }
+        $timeKey = $this->getPeriodKey($period);
+        $tableName = $this->getTableName("activity", "stations", $period);
+        $stmt = $statsPdo->prepare(
+            "SELECT
+                " . $timeKey . ",
+                contract_id,
+                station_number,
+                num_changes,
+                rank_contract,
+                rank_global
+            FROM " . $tableName . "
+            WHERE contract_id = :cid AND " . $timeKey . " = (
+                SELECT MAX(" . $timeKey . ")
+                FROM " . $tableName . "
+                WHERE contract_id = :cid
+            )
+            ORDER BY rank_global"
+        );
+        $stmt->execute(array(
+            ":cid" => $contractId,
+            ));
+        $samples = $stmt->fetchAll();
+        $this->lastError = null;
+        return $samples;
+    }
+
 }

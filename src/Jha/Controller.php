@@ -193,6 +193,30 @@ class Controller
         return $response->withJson($reparition);
     }
 
+    public function getRankingContracts($request, $response, $args)
+    {
+        $rankings = $this->dao->getRankingContracts($args['period']);
+        if ($rankings === null) {
+            return $response->withJson(
+                array('error' => $this->dao->getLastError()),
+                404
+            );
+        }
+        return $response->withJson($rankings);
+    }
+
+    public function getRankingStations($request, $response, $args)
+    {
+        $rankings = $this->dao->getRankingStations($args['period'], $args['cid']);
+        if ($rankings === null) {
+            return $response->withJson(
+                array('error' => $this->dao->getLastError()),
+                404
+            );
+        }
+        return $response->withJson($rankings);
+    }
+
     public function middlewareClearCacheHint($request, $response, $next) {
         $response = $next($request, $response);
 

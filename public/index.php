@@ -105,6 +105,11 @@ $group = $app->group('/jcdecaux_history_api', function () use ($app) {
             });
         });
 
+        $app->group('/ranking/{period:day|week|month|year}/contracts', function () use ($app) {
+            $app->get('', '\Jha\Controller:getRankingContracts');
+            $app->get('/{cid:[0-9]+}/stations', '\Jha\Controller:getRankingStations');
+        });
+
         $app->group('/minmax/{period:day}', function () use ($app) {
             $app->get('/global', '\Jha\Controller:getMinMaxGlobal');
 
