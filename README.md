@@ -1,3 +1,7 @@
+# OBSOLETE
+
+This repository has been archived and will not be updated anymore.
+
 # jcdecaux_history_api
 Web API to access jcdecaux_fetch_store and jcdecaux_stats_batch data
 
